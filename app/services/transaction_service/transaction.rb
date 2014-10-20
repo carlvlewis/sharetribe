@@ -103,6 +103,15 @@ module TransactionService::Transaction
 
     payment_gateway = MarketplaceService::Community::Query.payment_type(model.community_id)
 
+    payment_total =
+      case payment_gateway
+      when :checkout, :braintree
+        Maybe(model).payment.total_sum.or_else(nil)
+      when :paypal
+        paypal_payments = PaypalService::API::Payments.new
+        paypal_payments.get_payment(model.community_id, model.id)
+      end
+
     DataTypes.create_transaction({
         payment_process: payment_process,
         payment_gateway: payment_gateway,
@@ -115,6 +124,7 @@ module TransactionService::Transaction
         listing_quantity: 1,
         automatic_confirmation_after_days: model.automatic_confirmation_after_days,
         last_transition_at: model.last_transition_at,
-        current_state: model.current_state.to_sym})
+        current_state: model.current_state.to_sym,
+        payment_total: payment_total })
   end
 end
