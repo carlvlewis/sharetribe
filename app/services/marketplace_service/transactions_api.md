@@ -20,7 +20,7 @@ Example request body:
 ```ruby
 { transaction:
   { payment_process: :none # or :postpay, :preauthorize
-  , payment_gateway: :paypal # or :checkout, :braintree
+  , payment_gateway: :none, # :paypal, :checkout or :braintree
   , community_id: 501
   , starter_id: "5678dcba"
   , listing_id: 1234
@@ -31,9 +31,12 @@ Example request body:
   , automatic_confirmation_after_days: 7
   }
 
-, paypal: {} # No additional fields for Paypal needed
-  
-, braintree: # Only for :preauthorize
+, paypal: # Optional
+  { success_url: "http://bikes.sharetribe.com/en/listings/1234/paypal_checkout_order_success"
+  , cancel_url: "http://bikes.sharetribe.com/en/listings/1234/paypal_checkout_order_cancel"
+  }
+
+, braintree: # Optional and only for :preauthorize
   { cardholder_name: "Mikko Koski"
   , credit_card_number: "4000 5000 6000 7000 9"
   , cvv: "1234"
@@ -71,7 +74,7 @@ Response:
   { redirect_url: "https://paypal.com/token?EJAHGOSKLGAHSG" }
 
 , braintree: {} # No additional fields for Braintree
-  
+
 }
 ```
 
@@ -162,9 +165,9 @@ Response:
   , last_transition_at: <Time>
   , current_state: :rejected
   }
-  
+
 , paypal: { pending_reason: :multicurrency }
-  
+
 , braintree: {} # No additional fields
 }
 ```
@@ -179,8 +182,8 @@ Request:
 {
   checkout:
   { payment_rows: [] # Some payment row stuff here }
-  
-, braintree: 
+
+, braintree:
   { total_sum: Money.new(5000, "EUR") }
 }
 ```
